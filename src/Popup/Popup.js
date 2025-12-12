@@ -49,15 +49,19 @@ const Popup = () => {
                 ]),
               );
 
-              setLinkedImages((linkedImages) =>
-                unique([
-                  ...linkedImages,
-                  ...messages.flatMap((message) => message?.result?.linkedImages),
-                ]),
-              );
+            setLinkedImages((linkedImages) =>
+              unique([
+                ...linkedImages,
+                ...messages.flatMap((message) => message?.result?.linkedImages),
+              ]),
+            );
 
-              localStorage.active_tab_origin = messages[0]?.result?.origin;
-            });
+            localStorage.active_tab_origin = messages[0]?.result?.origin;
+            setOptions((options) => ({
+              ...options,
+              active_tab_origin: messages[0]?.result?.origin,
+            }));
+          });
         },
       );
     });

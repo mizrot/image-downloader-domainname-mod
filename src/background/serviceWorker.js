@@ -67,6 +67,8 @@ function suggestNewFilename(item, suggest) {
     return;
   }
 
+  const websiteName = getWebsiteName(task.options?.active_tab_origin);
+
   let newFilename = '';
   if (task.options.folder_name) {
     newFilename += `${task.options.folder_name}/`;
@@ -84,10 +86,37 @@ function suggestNewFilename(item, suggest) {
     newFilename += item.filename;
   }
 
+  newFilename = appendWebsiteNameToFilename(newFilename, websiteName);
   suggest({ filename: normalizeSlashes(newFilename) });
   task.next();
 }
 
 function normalizeSlashes(filename) {
   return filename.replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+}
+
+function appendWebsiteNameToFilename(filename, websiteName) {
+  if (!websiteName) return filename;
+
+  const sanitizedWebsiteName = websiteName.replace(/[\\/:*?"<>|]/g, '-');
+  const parts = filename.split('/');
+  const originalFilename = parts.pop() || '';
+
+  const lastDotIndex = originalFilename.lastIndexOf('.');
+  const basename = lastDotIndex > 0 ? originalFilename.slice(0, lastDotIndex) : originalFilename;
+  const extension = lastDotIndex > 0 ? originalFilename.slice(lastDotIndex) : '';
+
+  const newFilename = `${basename}-${sanitizedWebsiteName}${extension}`;
+  return [...parts, newFilename].join('/');
+}
+
+function getWebsiteName(origin) {
+  if (!origin) return '';
+
+  try {
+    return new URL(origin).hostname;
+  } catch (error) {
+    console.error('Failed to parse origin for website name:', error);
+    return '';
+  }
 }
